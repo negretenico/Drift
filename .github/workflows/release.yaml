@@ -1,0 +1,126 @@
+name: Release
+
+on:
+    push:
+        branches:
+            - main
+            - develop
+
+permissions:
+    contents: write
+    pull-requests: write
+    packages: write
+    id-token: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "npm"
+                  registry-url: "https://npm.pkg.github.com"
+
+            - name: Configure Git
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build packages
+              run: npx turbo run build --filter='./packages/*'
+
+            # DEVELOP BRANCH - Canary Release
+            - name: Publish Canary (develop)
+              if: github.ref == 'refs/heads/develop'
+              run: |
+                  TIMESTAMP=$(date +%s)
+                  echo "Publishing canary with timestamp: ${TIMESTAMP}"
+
+                  for pkg in packages/*/package.json; do
+                    if [ -f "$pkg" ]; then
+                      DIR=$(dirname "$pkg")
+                      PACKAGE_NAME=$(node -p "require('./$pkg').name")
+                      CURRENT_VERSION=$(node -p "require('./$pkg').version")
+                      CANARY_VERSION="${CURRENT_VERSION}-canary.${TIMESTAMP}"
+                      
+                      echo "Publishing ${PACKAGE_NAME}@${CANARY_VERSION}"
+                      
+                      cd "$DIR"
+                      npm version "${CANARY_VERSION}" --no-git-tag-version
+                      npm publish --tag canary --access public
+                      cd ../..
+                    fi
+                  done
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Comment Canary Release
+              if: github.ref == 'refs/heads/develop'
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const timestamp = Math.floor(Date.now() / 1000);
+                      const packages = ['@drift/lib', '@drift/react', '@drift/sw'];
+
+                      const body = `## 🚀 Canary Release Published
+
+                      **Install the latest canary:**
+                      \`\`\`bash
+                      npm install ${packages.map(p => `${p}@canary`).join(' ')}
+                      \`\`\`
+
+                      **Or specific version:**
+                      \`\`\`bash
+                      npm install ${packages.map(p => `${p}@0.1.0-canary.${timestamp}`).join(' ')}
+                      \`\`\`
+                      `;
+
+                      github.rest.repos.createCommitComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        commit_sha: context.sha,
+                        body: body
+                      });
+
+            # MAIN BRANCH - Stable Release
+            - name: Create Release PR or Publish (main)
+              if: github.ref == 'refs/heads/main'
+              id: changesets
+              uses: changesets/action@v1
+              with:
+                  publish: npx changeset publish
+                  commit: "chore: release stable version"
+                  title: "chore: release stable version"
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Create GitHub Releases (main)
+              if: github.ref == 'refs/heads/main' && steps.changesets.outputs.published == 'true'
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const packages = JSON.parse('${{ steps.changesets.outputs.publishedPackages }}');
+
+                      for (const pkg of packages) {
+                        const tag = `${pkg.name}@${pkg.version}`;
+                        
+                        await github.rest.repos.createRelease({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          tag_name: tag,
+                          name: `${pkg.name} v${pkg.version}`,
+                          body: `Release ${pkg.name} version ${pkg.version}`,
+                          draft: false,
+                          prerelease: false
+                        });
+                      }
