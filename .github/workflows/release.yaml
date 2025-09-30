@@ -65,7 +65,7 @@ jobs:
 
             - name: Comment Canary Release
               if: github.ref == 'refs/heads/develop'
-              uses: actions/github-script@v7
+              uses: actions/github-script@v8
               with:
                   script: |
                       const timestamp = Math.floor(Date.now() / 1000);
@@ -106,7 +106,7 @@ jobs:
 
             - name: Create GitHub Releases (main)
               if: github.ref == 'refs/heads/main' && steps.changesets.outputs.published == 'true'
-              uses: actions/github-script@v7
+              uses: actions/github-script@v8
               with:
                   script: |
                       const packages = JSON.parse('${{ steps.changesets.outputs.publishedPackages }}');
