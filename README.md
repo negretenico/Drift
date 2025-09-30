@@ -1,6 +1,6 @@
-# Relay
+# Drift
 
-**Relay** is an offline-first framework for React applications.
+**Drift** is an offline-first framework for React applications.
 Its goal is simple but powerful: **make your app resilient to bad networks**.
 
 Whether your users are on a plane, in a subway tunnel, or just dealing with flaky Wi-Fi, Relay ensures your app keeps working. All requests are safely queued into a **Write-Ahead Log (WAL)** and replayed once connectivity is restored — so your app stays usable and consistent no matter the conditions.
