@@ -1,9 +1,9 @@
 {
-  "name": "react",
+  "name": "rreact",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\""
+    "test": "vitest run -c ../../vitest.dom.config.ts"
   },
   "keywords": [],
   "author": "",
