@@ -15,7 +15,10 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-
+    env:
+      # Use GITHUB_TOKEN for authentication to GitHub Packages
+      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      npm_config_registry: "https://npm.pkg.github.com"
     steps:
       # Checkout the repository
       - uses: actions/checkout@v5
