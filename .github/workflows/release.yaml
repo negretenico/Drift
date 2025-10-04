@@ -40,10 +40,10 @@ jobs:
             - name: Configure npm for GitHub Packages
               run: |
                 echo "@drift:registry=https://npm.pkg.github.com" >> ~/.npmrc
-                echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+                echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN }" >> ~/.npmrc
                 echo "always-auth=true" >> ~/.npmrc
               env:
-                NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+                NPM_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
 
             # DEVELOP BRANCH - Canary Release
             - name: Publish Canary (develop)
@@ -107,7 +107,7 @@ jobs:
                   title: "chore: release stable version"
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  NPM_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
 
             - name: Create GitHub Releases (main)
               if: github.ref == 'refs/heads/main' && steps.changesets.outputs.published == 'true'
