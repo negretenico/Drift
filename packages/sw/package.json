@@ -1,5 +1,5 @@
 {
-  "name": "@drift/sw",
+  "name": "@negretenico/sw",
   "version": "0.0.0",
   "main": "index.js",
   "scripts": {

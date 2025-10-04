@@ -1,9 +1,9 @@
 {
-  "name": "@drift/react",
+  "name": "@negretenico/react",
   "version": "0.0.0",
   "main": "index.js",
   "dependencies": {
-    "@drift/lib": "*"
+    "@negretenico/lib": "*"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0"
