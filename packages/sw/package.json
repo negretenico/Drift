@@ -1,12 +1,40 @@
 {
   "name": "@negretenico/sw",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "negretenico-sw": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@negretenico/lib": "*"
+  },
   "scripts": {
+    "build": "npm run build:lib && npm run build:worker && npm run build:cli",
+    "build:lib": "tsup src/index.ts --format cjs,esm --dts",
+    "build:worker": "tsup src/service-worker/service-worker.ts --format iife --outDir dist --no-splitting --minify",
+    "build:cli": "tsup src/cli.ts --format cjs --outDir dist --no-splitting",
+    "dev": "npm run build:lib -- --watch",
     "test": "vitest run"
   },
+  "files": [
+    "dist"
+  ],
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  }
 }
