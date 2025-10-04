@@ -32,6 +32,9 @@
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "engines": {
     "node": ">=22.5.0",
     "npm": ">=10.9.0"
