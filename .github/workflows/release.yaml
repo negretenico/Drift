@@ -37,6 +37,13 @@ jobs:
 
             - name: Build packages
               run: npx turbo run build --filter='./packages/*'
+            - name: Configure npm for GitHub Packages
+              run: |
+                echo "@drift:registry=https://npm.pkg.github.com" >> ~/.npmrc
+                echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+                echo "always-auth=true" >> ~/.npmrc
+              env:
+                NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
             # DEVELOP BRANCH - Canary Release
             - name: Publish Canary (develop)
