@@ -1,8 +1,9 @@
-import "@testing-library/jest-dom";
+import { expect, afterEach } from "vitest";
+import { cleanup } from "@testing-library/react";
+import * as matchers from "@testing-library/jest-dom/matchers";
 
-// Any global mocks go here, for example:
-globalThis.fetch =
-  globalThis.fetch ??
-  (() => {
-    throw new Error("fetch is not available in tests — mock it!");
-  });
+expect.extend(matchers);
+
+afterEach(() => {
+  cleanup();
+});

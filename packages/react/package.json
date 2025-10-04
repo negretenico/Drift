@@ -1,12 +1,30 @@
 {
   "name": "@negretenico/react",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "main": "index.js",
+  "dependencies": {
+    "@negretenico/lib": "*"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "build": "tsup src/index.ts --format cjs,esm --dts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "@types/react": "^19.2.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/jest-dom": "^6.9.0",
+    "vitest": "^3.2.4",
+    "jsdom": "^27.0.0"
+  }
 }

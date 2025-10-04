@@ -2,7 +2,7 @@ import {
   DurabilityManager,
   DurabilityConfig,
 } from "../durablity/DurabilityManager";
-import { randomUUID } from "crypto";
+import { v4 as randomUUID } from "uuid";
 import { WalClient, WalEntry } from "./interfaces";
 
 interface DurableWalConfig {
@@ -126,3 +126,5 @@ export class DurableWal implements WalClient {
     return this.durableManager.getEventCount();
   }
 }
+
+export type DurableWalType = DurableWal;
