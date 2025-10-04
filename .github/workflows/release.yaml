@@ -48,7 +48,7 @@ jobs:
         run: npx turbo run build --filter='./packages/*'
       - name: Configure npm for GitHub Packages
         run: |
-          echo "@drift:registry=https://npm.pkg.github.com" >> ~/.npmrc
+          echo "@negretenico:registry=https://npm.pkg.github.com" >> ~/.npmrc
           echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
           echo "always-auth=true" >> ~/.npmrc
         env:
@@ -88,7 +88,7 @@ jobs:
         with:
           script: |
             const timestamp = Math.floor(Date.now() / 1000);
-            const packages = ['@drift/lib', '@drift/react', '@drift/sw'];
+            const packages = ['@negretenico/lib', '@negretenico/react', '@negretenico/sw'];
 
             const body = `## 🚀 Canary Release Published
 
