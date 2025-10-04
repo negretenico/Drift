@@ -63,12 +63,10 @@ jobs:
                       
                       cd "$DIR"
                       npm version "${CANARY_VERSION}" --no-git-tag-version
-                      npm publish --tag canary --access public
+                      npm publish --tag canary
                       cd ../..
                     fi
                   done
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
             - name: Comment Canary Release
               if: github.ref == 'refs/heads/develop'
