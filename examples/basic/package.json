@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:all": "npm run build && negretenico-sw public",
+    "sw": "negretenico-sw public",
+    "build:all": "vite build && npm run sw",
     "preview": "vite preview"
   },
   "dependencies": {
