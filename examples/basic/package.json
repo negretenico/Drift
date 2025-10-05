@@ -4,9 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "postinstall": "negretenico-sw public"
+    "build": "vite build && negretenico-sw public",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@negretenico/sw": "*"
