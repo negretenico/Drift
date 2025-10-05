@@ -60,24 +60,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TIMESTAMP=$(date +%s)
-          echo "Publishing canary packages with timestamp: $TIMESTAMP"
 
-          for pkg in packages/*/package.json; do
-            if [ -f "$pkg" ]; then
-              DIR=$(dirname "$pkg")
-              PACKAGE_NAME=$(node -p "require('./$pkg').name")
-              CURRENT_VERSION=$(node -p "require('./$pkg').version")
-              CANARY_VERSION="${CURRENT_VERSION}-canary.${TIMESTAMP}"
-
-              echo "Publishing ${PACKAGE_NAME}@${CANARY_VERSION}"
-
-              cd "$DIR"
-              npm version "${CANARY_VERSION}" --no-git-tag-version
-              npm publish --tag canary
-              cd ../..
-            fi
-          done
 
       # Comment on the commit with canary info
       - name: Comment Canary Release
@@ -108,39 +91,28 @@ jobs:
               body: body
             });
 
-      # ----------------------
-      # Stable releases on main
-      # ----------------------
-      - name: Create Release PR or Publish (main)
-        if: github.ref == 'refs/heads/main'
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          publish: npx changeset publish
-          commit: "chore: release stable version"
-          title: "chore: release stable version"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
 
       # Create GitHub Releases for main
       - name: Create GitHub Releases (main)
-        if: github.ref == 'refs/heads/main' && steps.changesets.outputs.published == 'true'
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const packages = JSON.parse('${{ steps.changesets.outputs.publishedPackages }}');
+        if: github.ref == 'refs/heads/main'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TIMESTAMP=$(date +%s)
+          echo "Publishing canary packages with timestamp: $TIMESTAMP"
 
-            for (const pkg of packages) {
-              const tag = `${pkg.name}@${pkg.version}`;
+          for pkg in packages/*/package.json; do
+            if [ -f "$pkg" ]; then
+              DIR=$(dirname "$pkg")
+              PACKAGE_NAME=$(node -p "require('./$pkg').name")
+              CURRENT_VERSION=$(node -p "require('./$pkg').version")
 
-              await github.rest.repos.createRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag_name: tag,
-                name: `${pkg.name} v${pkg.version}`,
-                body: `Release ${pkg.name} version ${pkg.version}`,
-                draft: false,
-                prerelease: false
-              });
-            }
+              echo "Publishing ${PACKAGE_NAME}@${CURRENT_VERSION}"
+
+              cd "$DIR"
+              npm version "${CURRENT_VERSION}" --no-git-tag-version
+              npm publish
+              cd ../..
+            fi
+          done
