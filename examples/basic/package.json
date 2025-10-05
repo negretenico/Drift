@@ -1,12 +1,17 @@
 {
-  "name": "basic",
+  "name": "@negretenico/basic",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "vitest run"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "postinstall": "negretenico-sw public"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "dependencies": {
+    "@negretenico/sw": "*"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
 }

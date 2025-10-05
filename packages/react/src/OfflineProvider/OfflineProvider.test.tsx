@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { OfflineProvider, useOffline } from "./OfflineProvider";
-import { DurableWalType } from "@drift/lib";
+import { WALClient } from "@negretenico/lib";
 let mockOfflineClient: {
   append: ReturnType<typeof vi.fn>;
   replay: ReturnType<typeof vi.fn>;
@@ -29,7 +29,7 @@ describe("OfflineProvider", () => {
     ])("should should have property", (property) => {
       const { result } = renderHook(() => useOffline(), {
         wrapper: ({ children }) => (
-          <OfflineProvider offlineClient={mockOfflineClient as DurableWalType}>
+          <OfflineProvider offlineClient={mockOfflineClient as WALClient}>
             {children}
           </OfflineProvider>
         ),
@@ -48,7 +48,7 @@ describe("OfflineProvider", () => {
 
       const { result } = renderHook(() => useOffline(), {
         wrapper: ({ children }) => (
-          <OfflineProvider offlineClient={mockOfflineClient as DurableWalType}>
+          <OfflineProvider offlineClient={mockOfflineClient as WALClient}>
             {children}
           </OfflineProvider>
         ),
@@ -64,7 +64,7 @@ describe("OfflineProvider", () => {
 
       const { result } = renderHook(() => useOffline(), {
         wrapper: ({ children }) => (
-          <OfflineProvider offlineClient={mockOfflineClient as DurableWalType}>
+          <OfflineProvider offlineClient={mockOfflineClient as WALClient}>
             {children}
           </OfflineProvider>
         ),
@@ -86,7 +86,7 @@ describe("OfflineProvider", () => {
 
       const { result } = renderHook(() => useOffline(), {
         wrapper: ({ children }) => (
-          <OfflineProvider offlineClient={mockOfflineClient as DurableWalType}>
+          <OfflineProvider offlineClient={mockOfflineClient as WALClient}>
             {children}
           </OfflineProvider>
         ),
@@ -107,7 +107,7 @@ describe("OfflineProvider", () => {
 
       const { result } = renderHook(() => useOffline(), {
         wrapper: ({ children }) => (
-          <OfflineProvider offlineClient={mockOfflineClient as DurableWalType}>
+          <OfflineProvider offlineClient={mockOfflineClient as WALClient}>
             {children}
           </OfflineProvider>
         ),
@@ -142,7 +142,7 @@ describe("OfflineProvider", () => {
 
       const { result } = renderHook(() => useOffline(), {
         wrapper: ({ children }) => (
-          <OfflineProvider offlineClient={mockOfflineClient as DurableWalType}>
+          <OfflineProvider offlineClient={mockOfflineClient as WALClient}>
             {children}
           </OfflineProvider>
         ),

@@ -22,7 +22,9 @@ try {
   console.log(`✓ Drift service worker copied to: ${targetFile}`);
   console.log(`\nNext steps:`);
   console.log(`1. Register the service worker in your app:`);
-  console.log(`   import { registerDriftServiceWorker } from '@drift/sw';`);
+  console.log(
+    `   import { registerDriftServiceWorker } from '@negretenico/sw';`
+  );
   console.log(`   await registerDriftServiceWorker();`);
 } catch (error) {
   console.error(`✗ Failed to copy service worker:`, error);

@@ -1,5 +1,5 @@
+import { WALClient } from "@negretenico/lib";
 import { PropsWithChildren, createContext, useContext, useMemo } from "react";
-import { DurableWalType } from "@drift/lib";
 
 type OfflineContextValue = {
   captureFailedOperation: (operation: string) => Promise<void>;
@@ -15,7 +15,7 @@ const Context = createContext<OfflineContextValue | null>(null);
 export function OfflineProvider({
   children,
   offlineClient,
-}: Readonly<PropsWithChildren> & { offlineClient: DurableWalType }) {
+}: Readonly<PropsWithChildren> & { offlineClient: WALClient }) {
   const contextValue = useMemo<OfflineContextValue>(
     () => ({
       captureFailedOperation: async (operation: string) => {

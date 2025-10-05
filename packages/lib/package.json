@@ -16,17 +16,22 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:node": "vitest run --config vitest.config.node.ts",
+    "test:browser": "vitest run --config vitest.config.browser.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@types/node": "^24.6.2",
-    "@types/uuid": "^10.0.0",
+    "@types/node": "^20.0.0",
+    "fake-indexeddb": "^5.0.0",
+    "happy-dom": "^12.0.0",
     "tsup": "^8.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
   },
   "dependencies": {
     "uuid": "^13.0.0"
