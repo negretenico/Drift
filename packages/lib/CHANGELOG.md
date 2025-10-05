@@ -1,5 +1,11 @@
 # @negretenico/lib
 
+## 1.2.0
+
+### Minor Changes
+
+- Adding final touches for working examples
+
 ## 1.0.0
 
 ### Major Changes

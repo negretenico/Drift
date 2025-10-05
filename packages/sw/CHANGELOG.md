@@ -1,5 +1,13 @@
 # @negretenico/sw
 
+## 1.2.0
+
+### Patch Changes
+
+- Adding final touches for working examples
+- Updated dependencies
+  - @negretenico/lib@1.2.0
+
 ## 1.1.0
 
 ### Minor Changes

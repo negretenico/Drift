@@ -1,43 +1,35 @@
 // @ts-nocheck
-import { DurableWal, DurableWalType } from "@negretenico/lib";
+import { WALClient, BrowserDurableWAL } from "@negretenico/lib";
 
-let wal: DurableWalType | undefined;
+let wal = null; // will hold an instance of DurableWalClient
 
 self.addEventListener("install", (event) => {
   console.info("[Drift:SW] Installing…");
   self.skipWaiting();
 });
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
     (async () => {
       console.info("[Drift:SW] Activating…");
-      if (self.registration.navigationPreload) {
-        await self.registration.navigationPreload.enable();
-      }
-      wal = new DurableWal({
-        durableConfig: {
-          walFileName: "service-worker.log",
-          retryConfig: {
-            maxRetries: 5,
-            initialDelayMs: 1000,
-            maxDelayMs: 10_000,
-            backoffMultiplier: 10,
-          },
-          onEventProcessed: (event, success) => {
-            console.log(
-              `[Drift:SW] Event processed: ${event}, success: ${success}`
-            );
-          },
-        },
+
+      // create the durability manager (implements IDurabilityManager)
+      const durableManager = new BrowserDurableWAL({
+        walFileName: "wal.log",
       });
+      // IMPORTANT: pass the durableManager into the client constructor
+      // Your library re-exports DurableWalClient as WALClient
+      wal = new WALClient(durableManager);
+
+      // claim clients so SW starts controlling pages
       await self.clients.claim();
+      console.info("[Drift:SW] WAL initialized");
     })()
   );
 });
 
 self.addEventListener("message", async (event) => {
-  const { type, payload } = event.data;
+  const { type, payload } = event.data || {};
   switch (type) {
     case "PING":
       event.source?.postMessage({ type: "PONG" });
@@ -51,9 +43,10 @@ self.addEventListener("message", async (event) => {
         return;
       }
       try {
-        await wal.replay(payload?.count || 50, async (eventStr: string) => {
-          console.log("[Drift:SW] Replaying:", eventStr);
-          const req = await deserializeRequest(JSON.parse(eventStr));
+        await wal.replay(payload?.count || 50, async (eventStr) => {
+          const retryEvenet = JSON.parse(JSON.parse(eventStr).data);
+          console.log("[Drift:SW] Replaying:", retryEvenet);
+          const req = await deserializeRequest(retryEvenet);
           await fetch(req);
         });
         event.source?.postMessage({ type: "REPLAY_COMPLETE" });
@@ -67,12 +60,17 @@ self.addEventListener("message", async (event) => {
   }
 });
 
-const serializeRequest = async (req: Request) => {
+const serializeRequest = async (req) => {
   return {
     url: req.url,
     method: req.method,
     headers: Object.fromEntries(req.headers.entries()),
-    body: req.body ? await req.clone().text() : null,
+    body: req.clone
+      ? await req
+          .clone()
+          .text()
+          .catch(() => null)
+      : null,
     mode: req.mode,
     credentials: req.credentials,
     cache: req.cache,
@@ -82,13 +80,15 @@ const serializeRequest = async (req: Request) => {
   };
 };
 
-async function deserializeRequest(
-  data: Awaited<ReturnType<typeof serializeRequest>>
-) {
+async function deserializeRequest(data: any): Promise<Request> {
+  // Only include body if method allows it and body is non-empty
+  const method = (data.method || "GET").toUpperCase();
+  const hasBody = data.body && !["GET", "HEAD"].includes(method);
+
   return new Request(data.url, {
-    method: data.method,
+    method,
     headers: data.headers,
-    body: data.body,
+    body: hasBody ? data.body : undefined,
     mode: data.mode,
     credentials: data.credentials,
     cache: data.cache,
@@ -98,48 +98,38 @@ async function deserializeRequest(
   });
 }
 
-// Check response status, not request status
-self.addEventListener("fetch", (event: FetchEvent) => {
-  console.debug("[Drift:SW] Intercepted:", event.request.url);
-
-  event.respondWith(
+self.addEventListener("fetch", (e) => {
+  e.respondWith(
     (async () => {
-      try {
-        const response = await fetch(event.request);
+      // Defensively handle WAL not yet initialized
+      if (!wal) {
+        console.warn("[Drift:SW] WAL not ready, performing normal fetch");
+        return fetch(e.request);
+      }
 
-        // Check if response failed with retriable error
+      try {
+        const response = await fetch(e.request);
+
         if (response.status >= 500 || response.status === 429) {
-          console.debug(
-            `[Drift:SW] Adding failed request to WAL: ${event.request.url}`
-          );
-          if (wal) {
-            const serialized = await serializeRequest(event.request);
-            await wal.append(JSON.stringify(serialized));
-          }
+          const serialized = JSON.stringify(await serializeRequest(e.request));
+          await wal.append(serialized);
         }
 
         return response;
       } catch (error) {
-        // Network error - definitely should retry
-        console.warn(
-          `[Drift:SW] Network error, adding to WAL: ${event.request.url}`
-        );
-        if (wal) {
-          const serialized = await serializeRequest(event.request);
-          await wal.append(JSON.stringify(serialized));
-        }
+        const serialized = JSON.stringify(await serializeRequest(e.request));
+        await wal.append(serialized);
         throw error;
       }
     })()
   );
 });
 
-// Background Sync API
-self.addEventListener("sync", (event: any) => {
+self.addEventListener("sync", (event) => {
   if (event.tag === "drift-retry") {
     event.waitUntil(
       (async () => {
-        if (!self.navigator.onLine) {
+        if (!navigator.onLine) {
           console.warn(`[Drift:SW] Not syncing, still offline`);
           return;
         }
@@ -150,14 +140,14 @@ self.addEventListener("sync", (event: any) => {
         }
 
         console.info(`[Drift:SW] Retrying failed requests`);
-        await wal.replay(50, async (req: string) => {
+        await wal.replay(50, async (req) => {
           const desReq = await deserializeRequest(JSON.parse(req));
           try {
             await fetch(desReq);
             console.info(`[Drift:SW] Retry successful: ${desReq.url}`);
           } catch (e) {
             console.error(`[Drift:SW] Retry failed: ${e}`);
-            throw e; // Re-throw so WAL knows it failed
+            throw e; // propagate so replay can mark the event as failed
           }
         });
       })()
