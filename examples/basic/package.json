@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vite build && negretenico-sw public",
+    "build": "vite build",
+    "build:all": "npm run build && negretenico-sw public",
     "preview": "vite preview"
   },
   "dependencies": {
